@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Koepfli Lab — Malaria Population Genomics, University of Notre Dame</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Neue+Haas+Grotesk+Display+Pro:wght@400;500&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Mono:ital,wght@0,300;1,300&family=Jost:wght@200;300;400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --ink: #0e0e0e;
+    --cream: #f5f0e8;
+    --warm-white: #faf8f4;
+    --gold: #b8923a;
+    --gold-light: #d4aa5a;
+    --rust: #8b3a2a;
+    --sage: #3d5a47;
+    --sage-light: #6a8c76;
+    --pale-sage: #e8ede9;
+    --mid: #5a5550;
+    --rule: rgba(14,14,14,0.12);
+    --rule-gold: rgba(184,146,58,0.3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; font-size: 16px; }
+
+  body {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    background: var(--warm-white);
+    color: var(--ink);
+    overflow-x: hidden;
+  }
+
+  /* ─── NOISE OVERLAY ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.6;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.4rem 4rem;
+    background: rgba(250,248,244,0.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .nav-logo {
+    font-family: 'Jost', sans-serif;
+    font-weight: 200;
+    font-size: 0.75rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .nav-logo span { color: var(--gold); }
+
+  .nav-links {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--mid);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--ink); }
+
+  /* ─── HERO ─── */
+  #hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 10rem 4rem 6rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-eyebrow {
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 2rem;
+  }
+
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(3.5rem, 6vw, 7rem);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--sage);
+  }
+
+  .hero-sub {
+    font-size: 1.15rem;
+    font-weight: 300;
+    line-height: 1.7;
+    color: var(--mid);
+    max-width: 38ch;
+    margin-bottom: 3rem;
+  }
+
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--ink);
+    padding-bottom: 0.3rem;
+    transition: color 0.2s, border-color 0.2s;
+  }
+
+  .hero-cta:hover { color: var(--gold); border-color: var(--gold); }
+
+  .hero-cta::after { content: '→'; font-size: 1rem; }
+
+  .hero-right {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-right::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--sage) 0%, #1e3329 40%, #0a1a10 100%);
+    z-index: 0;
+  }
+
+  /* Decorative parasite motif */
+  .hero-decoration {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-decoration svg { opacity: 0.12; width: 70%; height: 70%; }
+
+  .hero-stat-block {
+    position: absolute;
+    bottom: 4rem;
+    left: 3rem;
+    z-index: 2;
+    color: rgba(245,240,232,0.9);
+  }
+
+  .hero-stat {
+    margin-bottom: 2rem;
+  }
+
+  .stat-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3.5rem;
+    font-weight: 300;
+    line-height: 1;
+    color: var(--gold-light);
+  }
+
+  .stat-label {
+    font-family: 'Jost', sans-serif;
+    font-weight: 200;
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.55);
+    margin-top: 0.3rem;
+  }
+
+  .hero-location {
+    position: absolute;
+    top: 3rem;
+    right: 3rem;
+    z-index: 2;
+    text-align: right;
+  }
+
+  .hero-location p {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    color: rgba(245,240,232,0.4);
+    line-height: 1.8;
+  }
+
+  /* ─── SECTION FUNDAMENTALS ─── */
+  section { padding: 7rem 4rem; }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 1.5rem;
+    margin-bottom: 4rem;
+    border-bottom: 1px solid var(--rule);
+    padding-bottom: 1.5rem;
+  }
+
+  .section-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+  }
+
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+    flex: 1;
+  }
+
+  .section-tagline {
+    font-family: 'Jost', sans-serif;
+    font-weight: 200;
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--mid);
+  }
+
+  /* ─── ABOUT ─── */
+  #about {
+    background: var(--cream);
+  }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 6rem;
+    align-items: start;
+  }
+
+  .pi-card {
+    position: sticky;
+    top: 6rem;
+  }
+
+  .pi-portrait {
+    width: 100%;
+    aspect-ratio: 3/4;
+    background: linear-gradient(160deg, var(--sage) 0%, #1e3329 100%);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+
+  .pi-portrait::after {
+    content: 'C K';
+    position: absolute;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 4rem;
+    font-weight: 300;
+    color: rgba(184,146,58,0.35);
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+
+  .pi-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 400;
+    margin-bottom: 0.3rem;
+  }
+
+  .pi-title {
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+
+  .pi-contact a {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--mid);
+    text-decoration: none;
+    line-height: 2;
+    transition: color 0.2s;
+  }
+
+  .pi-contact a:hover { color: var(--gold); }
+
+  .about-bio h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.2rem;
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.3;
+    margin-bottom: 2rem;
+    color: var(--ink);
+  }
+
+  .about-bio p {
+    font-size: 1.1rem;
+    line-height: 1.85;
+    color: var(--mid);
+    margin-bottom: 1.5rem;
+    font-weight: 300;
+  }
+
+  .bio-timeline {
+    margin-top: 3rem;
+    border-top: 1px solid var(--rule);
+    padding-top: 2.5rem;
+  }
+
+  .timeline-item {
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    gap: 1.5rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .timeline-year {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    padding-top: 0.1rem;
+  }
+
+  .timeline-desc {
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+
+  .timeline-desc small {
+    display: block;
+    color: var(--mid);
+    font-size: 0.75rem;
+    margin-top: 0.2rem;
+  }
+
+  /* ─── RESEARCH ─── */
+  #research {
+    background: var(--warm-white);
+  }
+
+  .research-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border: 1px solid var(--rule);
+  }
+
+  .research-card {
+    padding: 3rem 2.5rem;
+    border-right: 1px solid var(--rule);
+    position: relative;
+    transition: background 0.3s;
+  }
+
+  .research-card:last-child { border-right: none; }
+  .research-card:nth-child(4), .research-card:nth-child(5), .research-card:nth-child(6) {
+    border-top: 1px solid var(--rule);
+  }
+
+  .research-card:hover { background: var(--pale-sage); }
+
+  .card-index {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    margin-bottom: 1.5rem;
+    display: block;
+  }
+
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.45rem;
+    font-weight: 500;
+    line-height: 1.25;
+    margin-bottom: 1rem;
+    color: var(--ink);
+  }
+
+  .card-body {
+    font-size: 0.95rem;
+    line-height: 1.75;
+    color: var(--mid);
+    font-weight: 300;
+  }
+
+  .card-tag {
+    display: inline-block;
+    margin-top: 1.5rem;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 300;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--sage);
+    border: 1px solid var(--sage-light);
+    padding: 0.25rem 0.6rem;
+    border-radius: 0;
+  }
+
+  /* ─── PEOPLE ─── */
+  #people {
+    background: var(--ink);
+    color: var(--cream);
+  }
+
+  #people .section-title { color: var(--cream); }
+  #people .section-number { color: var(--gold); }
+  #people .section-header { border-bottom-color: rgba(245,240,232,0.12); }
+
+  .people-category {
+    margin-bottom: 4rem;
+  }
+
+  .people-cat-label {
+    font-family: 'Jost', sans-serif;
+    font-weight: 200;
+    font-size: 0.6rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 2rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid rgba(184,146,58,0.25);
+  }
+
+  .people-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .person-card {
+    padding: 2rem 1.5rem;
+    border: 1px solid rgba(245,240,232,0.08);
+    transition: border-color 0.3s, background 0.3s;
+  }
+
+  .person-card:hover {
+    border-color: var(--gold);
+    background: rgba(184,146,58,0.06);
+  }
+
+  .person-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--sage) 0%, #1e3329 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.2rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    color: var(--gold-light);
+    font-weight: 400;
+  }
+
+  .person-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--cream);
+    margin-bottom: 0.3rem;
+    line-height: 1.2;
+  }
+
+  .person-role {
+    font-family: 'Jost', sans-serif;
+    font-weight: 200;
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+
+  .person-focus {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.85rem;
+    color: rgba(245,240,232,0.45);
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  .alumni-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+
+  .alumni-chip {
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    color: rgba(245,240,232,0.55);
+    border: 1px solid rgba(245,240,232,0.12);
+    padding: 0.5rem 1rem;
+    transition: all 0.2s;
+  }
+
+  .alumni-chip:hover {
+    color: var(--cream);
+    border-color: rgba(245,240,232,0.3);
+  }
+
+  /* ─── PUBLICATIONS ─── */
+  #publications {
+    background: var(--cream);
+  }
+
+  .pub-list { max-width: 900px; }
+
+  .pub-item {
+    display: grid;
+    grid-template-columns: 4rem 1fr;
+    gap: 2rem;
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--rule);
+    transition: background 0.2s;
+  }
+
+  .pub-item:first-child { border-top: 1px solid var(--rule); }
+
+  .pub-year {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    padding-top: 0.2rem;
+  }
+
+  .pub-content {}
+
+  .pub-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    font-weight: 500;
+    line-height: 1.4;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+  }
+
+  .pub-title a {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+
+  .pub-title a:hover { border-color: var(--gold); }
+
+  .pub-authors {
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    font-size: 0.75rem;
+    color: var(--mid);
+    line-height: 1.6;
+    margin-bottom: 0.4rem;
+  }
+
+  .pub-authors strong { color: var(--ink); font-weight: 400; }
+
+  .pub-journal {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 0.9rem;
+    color: var(--sage);
+  }
+
+  .pub-badge {
+    display: inline-block;
+    font-family: 'Jost', sans-serif;
+    font-size: 0.55rem;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--rust);
+    border: 1px solid var(--rust);
+    padding: 0.15rem 0.5rem;
+    margin-left: 0.8rem;
+    vertical-align: middle;
+  }
+
+  /* ─── REGIONS ─── */
+  #regions {
+    background: var(--warm-white);
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+
+  .regions-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 1px solid var(--rule);
+  }
+
+  .region-panel {
+    padding: 4rem 3.5rem;
+    border-right: 1px solid var(--rule);
+    position: relative;
+  }
+
+  .region-panel:last-child { border-right: none; }
+
+  .region-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+  }
+
+  .region-species {
+    font-family: 'DM Mono', monospace;
+    font-style: italic;
+    font-size: 0.7rem;
+    color: var(--sage);
+    letter-spacing: 0.05em;
+    margin-bottom: 1.5rem;
+  }
+
+  .region-desc {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: var(--mid);
+    font-weight: 300;
+  }
+
+  .region-accent {
+    position: absolute;
+    top: 2rem;
+    right: 2.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 6rem;
+    font-weight: 300;
+    color: rgba(14,14,14,0.04);
+    line-height: 1;
+  }
+
+  /* ─── PARTNERS ─── */
+  #partners {
+    background: var(--cream);
+  }
+
+  .partners-intro {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.6;
+    color: var(--mid);
+    max-width: 60ch;
+    margin-bottom: 4rem;
+  }
+
+  .partner-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border: 1px solid var(--rule);
+  }
+
+  .partner-item {
+    padding: 2rem 2.5rem;
+    border-right: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .partner-item:nth-child(3n) { border-right: none; }
+  .partner-item:nth-last-child(-n+3) { border-bottom: none; }
+
+  .partner-country {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+
+  .partner-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+
+  /* ─── JOIN ─── */
+  #join {
+    background: linear-gradient(160deg, var(--sage) 0%, #1a3028 50%, #0e1e16 100%);
+    min-height: 55vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #join::before {
+    content: 'OPEN';
+    position: absolute;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 25rem;
+    font-weight: 300;
+    color: rgba(255,255,255,0.025);
+    line-height: 1;
+    letter-spacing: -0.04em;
+    pointer-events: none;
+  }
+
+  .join-eyebrow {
+    font-family: 'Jost', sans-serif;
+    font-weight: 200;
+    font-size: 0.65rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold-light);
+    margin-bottom: 1.5rem;
+  }
+
+  .join-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.5rem, 5vw, 5rem);
+    font-weight: 300;
+    color: var(--cream);
+    line-height: 1.1;
+    margin-bottom: 1.5rem;
+    max-width: 18ch;
+  }
+
+  .join-body {
+    font-size: 1.1rem;
+    font-weight: 300;
+    color: rgba(245,240,232,0.6);
+    max-width: 48ch;
+    line-height: 1.7;
+    margin-bottom: 3rem;
+  }
+
+  .join-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--cream);
+    text-decoration: none;
+    border: 1px solid rgba(245,240,232,0.35);
+    padding: 1rem 2.5rem;
+    transition: all 0.3s;
+  }
+
+  .join-btn:hover {
+    background: rgba(184,146,58,0.2);
+    border-color: var(--gold-light);
+    color: var(--gold-light);
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: var(--ink);
+    padding: 3rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(245,240,232,0.08);
+  }
+
+  .footer-brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 300;
+    color: var(--cream);
+  }
+
+  .footer-brand small {
+    display: block;
+    font-family: 'Jost', sans-serif;
+    font-weight: 200;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.3);
+    margin-top: 0.3rem;
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+
+  .footer-links a {
+    font-family: 'Jost', sans-serif;
+    font-weight: 200;
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.35);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .footer-links a:hover { color: var(--gold); }
+
+  .footer-legal {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    color: rgba(245,240,232,0.2);
+    letter-spacing: 0.05em;
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-in {
+    opacity: 0;
+    animation: fadeUp 0.8s ease forwards;
+  }
+
+  .delay-1 { animation-delay: 0.1s; }
+  .delay-2 { animation-delay: 0.25s; }
+  .delay-3 { animation-delay: 0.4s; }
+  .delay-4 { animation-delay: 0.55s; }
+
+  /* ─── HORIZONTAL MARQUEE ─── */
+  .marquee-wrap {
+    overflow: hidden;
+    background: var(--sage);
+    padding: 0.9rem 0;
+    border-top: 1px solid rgba(245,240,232,0.1);
+    border-bottom: 1px solid rgba(245,240,232,0.1);
+  }
+
+  .marquee-track {
+    display: flex;
+    gap: 3rem;
+    animation: marquee 28s linear infinite;
+    white-space: nowrap;
+  }
+
+  .marquee-track span {
+    font-family: 'Jost', sans-serif;
+    font-weight: 200;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(245,240,232,0.5);
+    flex-shrink: 0;
+  }
+
+  .marquee-track span.dot {
+    color: var(--gold-light);
+    letter-spacing: 0;
+  }
+
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 960px) {
+    nav { padding: 1.2rem 2rem; }
+    .nav-links { display: none; }
+    #hero { grid-template-columns: 1fr; min-height: auto; }
+    .hero-left { padding: 8rem 2rem 4rem; }
+    .hero-right { height: 50vh; }
+    section { padding: 5rem 2rem; }
+    .about-grid { grid-template-columns: 1fr; }
+    .pi-card { position: static; }
+    .research-grid { grid-template-columns: 1fr; }
+    .research-card { border-right: none; border-bottom: 1px solid var(--rule); }
+    .regions-layout { grid-template-columns: 1fr; }
+    .region-panel { border-right: none; border-bottom: 1px solid var(--rule); }
+    .partner-list { grid-template-columns: 1fr 1fr; }
+    .partner-item:nth-child(2n) { border-right: none; }
+    footer { flex-direction: column; gap: 1.5rem; text-align: center; }
+  }
+</style>
+</head>
+
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Koepfli <span>Lab</span></a>
+  <ul class="nav-links">
+    <li><a href="#about">Principal Investigator</a></li>
+    <li><a href="#research">Research</a></li>
+    <li><a href="#people">Team</a></li>
+    <li><a href="#publications">Publications</a></li>
+    <li><a href="#partners">Partners</a></li>
+    <li><a href="#join">Join Us</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-left">
+    <p class="hero-eyebrow animate-in delay-1">Malaria Population Genomics · Notre Dame</p>
+    <h1 class="hero-title animate-in delay-2">
+      Mapping<br>the <em>invisible</em><br>burden
+    </h1>
+    <p class="hero-sub animate-in delay-3">
+      Molecular epidemiology and parasite genomics in service of malaria
+      control and elimination across Africa, Asia, and Latin America.
+    </p>
+    <a href="#research" class="hero-cta animate-in delay-4">Explore our work</a>
+  </div>
+  <div class="hero-right">
+    <div class="hero-decoration">
+      <!-- Decorative Plasmodium-inspired SVG motif -->
+      <svg viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="200" cy="200" r="160" stroke="white" stroke-width="0.8" stroke-dasharray="4 8"/>
+        <circle cx="200" cy="200" r="110" stroke="white" stroke-width="0.5" stroke-dasharray="2 6"/>
+        <circle cx="200" cy="200" r="60" stroke="white" stroke-width="0.8"/>
+        <circle cx="200" cy="200" r="20" fill="white" opacity="0.6"/>
+        <!-- merozoites -->
+        <ellipse cx="200" cy="70" rx="8" ry="14" fill="white" opacity="0.5" transform="rotate(0 200 200)"/>
+        <ellipse cx="200" cy="70" rx="8" ry="14" fill="white" opacity="0.5" transform="rotate(45 200 200)"/>
+        <ellipse cx="200" cy="70" rx="8" ry="14" fill="white" opacity="0.5" transform="rotate(90 200 200)"/>
+        <ellipse cx="200" cy="70" rx="8" ry="14" fill="white" opacity="0.5" transform="rotate(135 200 200)"/>
+        <ellipse cx="200" cy="70" rx="8" ry="14" fill="white" opacity="0.5" transform="rotate(180 200 200)"/>
+        <ellipse cx="200" cy="70" rx="8" ry="14" fill="white" opacity="0.5" transform="rotate(225 200 200)"/>
+        <ellipse cx="200" cy="70" rx="8" ry="14" fill="white" opacity="0.5" transform="rotate(270 200 200)"/>
+        <ellipse cx="200" cy="70" rx="8" ry="14" fill="white" opacity="0.5" transform="rotate(315 200 200)"/>
+        <!-- outer ring dots -->
+        <circle cx="200" cy="38" r="4" fill="white" opacity="0.4" transform="rotate(0 200 200)"/>
+        <circle cx="200" cy="38" r="4" fill="white" opacity="0.4" transform="rotate(40 200 200)"/>
+        <circle cx="200" cy="38" r="4" fill="white" opacity="0.4" transform="rotate(80 200 200)"/>
+        <circle cx="200" cy="38" r="4" fill="white" opacity="0.4" transform="rotate(120 200 200)"/>
+        <circle cx="200" cy="38" r="4" fill="white" opacity="0.4" transform="rotate(160 200 200)"/>
+        <circle cx="200" cy="38" r="4" fill="white" opacity="0.4" transform="rotate(200 200 200)"/>
+        <circle cx="200" cy="38" r="4" fill="white" opacity="0.4" transform="rotate(240 200 200)"/>
+        <circle cx="200" cy="38" r="4" fill="white" opacity="0.4" transform="rotate(280 200 200)"/>
+        <circle cx="200" cy="38" r="4" fill="white" opacity="0.4" transform="rotate(320 200 200)"/>
+      </svg>
+    </div>
+    <div class="hero-location">
+      <p>46°31′N 86°14′W</p>
+      <p>Notre Dame, Indiana</p>
+      <p>Galvin Life Sciences</p>
+    </div>
+    <div class="hero-stat-block">
+      <div class="hero-stat">
+        <div class="stat-number">3,700+</div>
+        <div class="stat-label">Citations</div>
+      </div>
+      <div class="hero-stat">
+        <div class="stat-number">5</div>
+        <div class="stat-label">Plasmodium species</div>
+      </div>
+      <div class="hero-stat">
+        <div class="stat-number">15+</div>
+        <div class="stat-label">Countries studied</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span>P. falciparum</span><span class="dot">·</span>
+    <span>P. vivax</span><span class="dot">·</span>
+    <span>P. malariae</span><span class="dot">·</span>
+    <span>Amplicon Sequencing</span><span class="dot">·</span>
+    <span>Population Genomics</span><span class="dot">·</span>
+    <span>IBD Networks</span><span class="dot">·</span>
+    <span>Digital PCR</span><span class="dot">·</span>
+    <span>Malaria Elimination</span><span class="dot">·</span>
+    <span>Global Health</span><span class="dot">·</span>
+    <span>Ethiopia · Cambodia · Zanzibar · Bangladesh · Kenya</span><span class="dot">·</span>
+    <!-- duplicate for seamless loop -->
+    <span>P. falciparum</span><span class="dot">·</span>
+    <span>P. vivax</span><span class="dot">·</span>
+    <span>P. malariae</span><span class="dot">·</span>
+    <span>Amplicon Sequencing</span><span class="dot">·</span>
+    <span>Population Genomics</span><span class="dot">·</span>
+    <span>IBD Networks</span><span class="dot">·</span>
+    <span>Digital PCR</span><span class="dot">·</span>
+    <span>Malaria Elimination</span><span class="dot">·</span>
+    <span>Global Health</span><span class="dot">·</span>
+    <span>Ethiopia · Cambodia · Zanzibar · Bangladesh · Kenya</span><span class="dot">·</span>
+  </div>
+</div>
+
+<!-- ABOUT / PI -->
+<section id="about">
+  <div class="section-header">
+    <span class="section-number">01</span>
+    <h2 class="section-title">Principal Investigator</h2>
+    <span class="section-tagline">University of Notre Dame</span>
+  </div>
+  <div class="about-grid">
+    <div class="pi-card">
+      <div class="pi-portrait"></div>
+      <div class="pi-name">Cristian Koepfli</div>
+      <div class="pi-title">Assistant Professor</div>
+      <div class="pi-contact">
+        <a href="mailto:ckoepfli@nd.edu">ckoepfli@nd.edu</a>
+        <a href="tel:+15746317515">+1 574-631-7515</a>
+        <a href="https://biology.nd.edu/people/cristian-koepfli/" target="_blank">biology.nd.edu</a>
+        <a href="https://globalhealth.nd.edu" target="_blank">Eck Institute for Global Health</a>
+      </div>
+    </div>
+    <div class="about-bio">
+      <h3>"Our mission is to understand the true epidemiological burden of malaria, and to translate that knowledge into elimination."</h3>
+      <p>
+        Research in the Koepfli Lab uses molecular tools to interrogate the epidemiology of malaria and other infectious diseases. 
+        The lab continuously develops novel laboratory methods to diagnose, quantify, and genotype parasites and their transmission stages, 
+        then applies them to large, population-based surveys across endemic regions.
+      </p>
+      <p>
+        A central focus is the vast reservoir of asymptomatic, low-density infections that escape clinical detection entirely. 
+        Using ultrasensitive molecular methods, the lab characterizes this hidden burden, maps transmission networks using GPS-informed parasite genotyping, 
+        and distinguishes imported from locally acquired infections to guide targeted interventions.
+      </p>
+      <p>
+        Collaborative fieldwork spans sub-Saharan Africa, South and Southeast Asia, and Latin America. The lab regularly welcomes researchers 
+        from endemic countries to Notre Dame for training, fostering genuine, long-term partnerships with institutions in the field.
+      </p>
+      <div class="bio-timeline">
+        <div class="timeline-item">
+          <div class="timeline-year">2018 — present</div>
+          <div class="timeline-desc">
+            Assistant Professor
+            <small>Department of Biological Sciences & Eck Institute for Global Health, University of Notre Dame</small>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year">2016 — 2018</div>
+          <div class="timeline-desc">
+            Assistant Project Scientist
+            <small>University of California, Irvine</small>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year">2012 — 2016</div>
+          <div class="timeline-desc">
+            Postdoctoral Fellow
+            <small>Walter and Eliza Hall Institute for Medical Research, Melbourne, Australia</small>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-year">2012</div>
+          <div class="timeline-desc">
+            PhD
+            <small>Swiss Tropical and Public Health Institute, Basel, Switzerland</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESEARCH -->
+<section id="research">
+  <div class="section-header">
+    <span class="section-number">02</span>
+    <h2 class="section-title">Research Focus</h2>
+    <span class="section-tagline">Molecular epidemiology & genomics</span>
+  </div>
+  <div class="research-grid">
+    <div class="research-card">
+      <span class="card-index">01</span>
+      <h3 class="card-title">Asymptomatic Infection & Hidden Burden</h3>
+      <p class="card-body">Most malaria infections produce no fever and remain untreated. Using ultrasensitive molecular diagnostics, we characterize the full extent of the infection reservoir, including sub-microscopic parasitemia, to reveal the true epidemiological landscape that clinical surveillance misses entirely.</p>
+      <span class="card-tag">Diagnostics</span>
+    </div>
+    <div class="research-card">
+      <span class="card-index">02</span>
+      <h3 class="card-title">Transmission Networks & Spatial Genomics</h3>
+      <p class="card-body">Transmission is highly focal in space and time, yet the drivers of this heterogeneity are poorly understood. We combine parasite genotyping with GPS data to reconstruct transmission networks, distinguish imported from local infections, and identify persistent foci that resist standard control measures.</p>
+      <span class="card-tag">Genomics</span>
+    </div>
+    <div class="research-card">
+      <span class="card-index">03</span>
+      <h3 class="card-title">Gametocyte Biology & Infectivity</h3>
+      <p class="card-body">Not all infections transmit equally to mosquitoes. By quantifying sexual-stage transmission forms, we investigate how infectivity varies across individuals, seasons, and settings. In western Kenya, we showed that parasites increase their investment in transmission during the wet season when vectors are most abundant.</p>
+      <span class="card-tag">Transmission</span>
+    </div>
+    <div class="research-card">
+      <span class="card-index">04</span>
+      <h3 class="card-title">hrp2/hrp3 Deletions & Diagnostic Failure</h3>
+      <p class="card-body">Deletions of <em>P. falciparum</em> genes <em>hrp2</em> and <em>hrp3</em> render standard rapid diagnostic tests blind to infection. We developed a high-throughput digital PCR method to screen isolates from numerous countries, mapping deletion frequencies and helping malaria control programs select appropriate diagnostics.</p>
+      <span class="card-tag">Diagnostics · eLife 2022</span>
+    </div>
+    <div class="research-card">
+      <span class="card-index">05</span>
+      <h3 class="card-title">Amplicon Sequencing & Novel Methods</h3>
+      <p class="card-body">We develop and validate amplicon deep-sequencing panels for microhaplotype genotyping of polyclonal infections, ddPCR quantification of transmission stages, and mobile nanopore sequencing in endemic field sites. Our tools lower the barrier for in-country genomic surveillance globally.</p>
+      <span class="card-tag">Methods Development</span>
+    </div>
+    <div class="research-card">
+      <span class="card-index">06</span>
+      <h3 class="card-title">Population Genomics Across Species</h3>
+      <p class="card-body">Our work spans <em>P. falciparum</em>, <em>P. vivax</em>, <em>P. malariae</em>, and <em>P. knowlesi</em>. Using sNMF admixture analysis, identity-by-descent networks, and principal coordinate analysis on large multi-country datasets, we reconstruct parasite population structure and dispersal to guide elimination strategies.</p>
+      <span class="card-tag">Population Genetics</span>
+    </div>
+  </div>
+</section>
+
+<!-- GEOGRAPHIC FOCUS -->
+<section id="regions">
+  <div class="section-header">
+    <span class="section-number">03</span>
+    <h2 class="section-title">Geographic Focus</h2>
+    <span class="section-tagline">Field sites across three continents</span>
+  </div>
+  <div class="regions-layout">
+    <div class="region-panel">
+      <div class="region-accent">AF</div>
+      <h3 class="region-name">Sub-Saharan Africa</h3>
+      <div class="region-species"><em>P. falciparum · P. malariae · P. vivax</em></div>
+      <p class="region-desc">Field studies span Ethiopia (highlands, Gondar, Ziway), Kenya (western highlands, Kisumu), Zanzibar (pre-elimination setting), and multiple West African countries. Collaborative fieldwork addresses transmission heterogeneity, drug resistance surveillance, and spatial genomics in contexts ranging from high-endemic to near-elimination.</p>
+    </div>
+    <div class="region-panel">
+      <div class="region-accent">AS</div>
+      <h3 class="region-name">South & Southeast Asia</h3>
+      <div class="region-species"><em>P. vivax · P. falciparum · P. knowlesi</em></div>
+      <p class="region-desc">Research in Cambodia (Kampong Speu, Mondulkiri), Bangladesh (Chittagong Hill Tracts), Thailand, and Papua New Guinea investigates <em>P. vivax</em> relapse biology, population structure across continents, and the challenge of sustaining malaria control progress under low-endemic conditions with residual asymptomatic infections.</p>
+    </div>
+    <div class="region-panel" style="border-top:1px solid var(--rule)">
+      <div class="region-accent">LA</div>
+      <h3 class="region-name">Latin America</h3>
+      <div class="region-species"><em>P. vivax · P. falciparum</em></div>
+      <p class="region-desc">In collaboration with Fiocruz (Brazil) and partners across South America, the lab studies <em>P. vivax</em> diversity, drug resistance markers, and the interplay between human migration and parasite dispersal in low-transmission Amazonian settings where elimination efforts are increasingly feasible but complicated by forest malaria.</p>
+    </div>
+    <div class="region-panel" style="border-top:1px solid var(--rule); border-right:none">
+      <div class="region-accent">GL</div>
+      <h3 class="region-name">Global Genomics</h3>
+      <div class="region-species"><em>Multi-species · Multi-continent</em></div>
+      <p class="region-desc">Cross-continental studies characterize parasite population structure at the global scale, comparing African, Asian, and Latin American lineages of <em>P. vivax</em> across four continents. Mobile laboratory deployments using Oxford Nanopore technology are extending genomic surveillance capacity to resource-limited endemic settings worldwide.</p>
+    </div>
+  </div>
+</section>
+
+<!-- PEOPLE -->
+<section id="people">
+  <div class="section-header">
+    <span class="section-number">04</span>
+    <h2 class="section-title">The Team</h2>
+    <span class="section-tagline">Current & alumni researchers</span>
+  </div>
+
+  <div class="people-category">
+    <div class="people-cat-label">Current Members</div>
+    <div class="people-grid">
+      <div class="person-card">
+        <div class="person-avatar">AH</div>
+        <div class="person-name">Aurel Holzschuh</div>
+        <div class="person-role">Postdoctoral Researcher</div>
+        <div class="person-focus"><em>P. falciparum</em> genomic epidemiology in Zanzibar; mobile nanopore sequencing; drug resistance surveillance</div>
+      </div>
+      <div class="person-card">
+        <div class="person-avatar">GS</div>
+        <div class="person-name">Gustavo Da Silva Arango</div>
+        <div class="person-role">PhD Candidate</div>
+        <div class="person-focus">Malaria population genomics · <em>P. vivax</em> Cambodia, <em>P. malariae</em> Africa, <em>P. falciparum</em> Ethiopia · Amplicon sequencing pipelines</div>
+      </div>
+      <div class="person-card">
+        <div class="person-avatar">TH</div>
+        <div class="person-name">Tiffany Huwe</div>
+        <div class="person-role">PhD Candidate</div>
+        <div class="person-focus">Malaria epidemiology in Bangladesh; population structure; human migration and parasite dispersal in the Chittagong Hill Tracts</div>
+      </div>
+      <div class="person-card">
+        <div class="person-avatar">TK</div>
+        <div class="person-name">Tolulope Kayode</div>
+        <div class="person-role">Postdoctoral Researcher</div>
+        <div class="person-focus">Malaria molecular diagnostics; transmission stage quantification; novel detection methods development</div>
+      </div>
+      <div class="person-card">
+        <div class="person-avatar">LL</div>
+        <div class="person-name">Laurel A. Lown</div>
+        <div class="person-role">Graduate Researcher</div>
+        <div class="person-focus">Parasite genomics and malaria epidemiology; amplicon sequencing pipeline development</div>
+      </div>
+      <div class="person-card">
+        <div class="person-avatar">YG</div>
+        <div class="person-name">Yilekal Gebre</div>
+        <div class="person-role">Graduate Researcher</div>
+        <div class="person-focus">Malaria transmission dynamics in Ethiopian highlands; population structure and importation</div>
+      </div>
+      <div class="person-card">
+        <div class="person-avatar">ET</div>
+        <div class="person-name">Emma V. Troth</div>
+        <div class="person-role">Graduate Researcher</div>
+        <div class="person-focus">Molecular epidemiology; parasite genotyping and transmission network analysis</div>
+      </div>
+      <div class="person-card">
+        <div class="person-avatar">AS</div>
+        <div class="person-name">André B. Sagna</div>
+        <div class="person-role">Researcher</div>
+        <div class="person-focus">Malaria receptivity mapping; archived rapid diagnostic test studies; Bangladesh surveillance</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="people-category">
+    <div class="people-cat-label">Alumni</div>
+    <div class="alumni-grid">
+      <div class="alumni-chip">Claudia A. Vera-Arias, PhD — Now at University of Notre Dame (Postdoc)</div>
+      <div class="alumni-chip">Aurel Holzschuh — PhD, Now Postdoc in Koepfli Lab</div>
+      <div class="alumni-chip">Colins O. Oduma — Kenya Medical Research Institute</div>
+      <div class="alumni-chip">Mohammad Golam Kibria — Collaborator, Bangladesh</div>
+      <div class="alumni-chip">Fatema Tuj Johora — Graduate alumna</div>
+    </div>
+  </div>
+</section>
+
+<!-- PUBLICATIONS -->
+<section id="publications">
+  <div class="section-header">
+    <span class="section-number">05</span>
+    <h2 class="section-title">Selected Publications</h2>
+    <span class="section-tagline">Peer-reviewed work</span>
+  </div>
+  <div class="pub-list">
+
+    <div class="pub-item">
+      <div class="pub-year">2024</div>
+      <div class="pub-content">
+        <div class="pub-title">
+          <a href="https://journals.plos.org/globalpublichealth/article?id=10.1371/journal.pgph.0002743" target="_blank">Using a mobile nanopore sequencing lab for end-to-end genomic surveillance of <em>Plasmodium falciparum</em>: a feasibility study</a>
+          <span class="pub-badge">Open Access</span>
+        </div>
+        <div class="pub-authors"><strong>Holzschuh A</strong>, Lerch A, Fakih BS, … <strong>Koepfli C</strong></div>
+        <div class="pub-journal">PLOS Global Public Health, 2024</div>
+      </div>
+    </div>
+
+    <div class="pub-item">
+      <div class="pub-year">2024</div>
+      <div class="pub-content">
+        <div class="pub-title">
+          <a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/mec.17292" target="_blank"><em>Plasmodium falciparum</em> transmission in the highlands of Ethiopia is driven by closely related and clonal parasites</a>
+        </div>
+        <div class="pub-authors"><strong>Holzschuh A</strong>, … <strong>Koepfli C</strong></div>
+        <div class="pub-journal">Molecular Ecology, 2024</div>
+      </div>
+    </div>
+
+    <div class="pub-item">
+      <div class="pub-year">2022</div>
+      <div class="pub-content">
+        <div class="pub-title">
+          <a href="https://elifesciences.org/articles/72083" target="_blank">High-throughput <em>Plasmodium falciparum hrp2</em> and <em>hrp3</em> gene deletion typing by digital PCR to monitor malaria rapid diagnostic test efficacy</a>
+          <span class="pub-badge">Open Access</span>
+        </div>
+        <div class="pub-authors"><strong>Vera-Arias CA</strong>, <strong>Holzschuh A</strong>, Oduma CO, … <strong>Koepfli C</strong></div>
+        <div class="pub-journal">eLife, 2022</div>
+      </div>
+    </div>
+
+    <div class="pub-item">
+      <div class="pub-year">2020</div>
+      <div class="pub-content">
+        <div class="pub-title">
+          <a href="https://pubmed.ncbi.nlm.nih.gov/32967671/" target="_blank">Stratifying malaria receptivity in Bangladesh using archived rapid diagnostic tests</a>
+        </div>
+        <div class="pub-authors">Sagna AB, Kibria MG, Naher S, … <strong>Koepfli C</strong></div>
+        <div class="pub-journal">Malaria Journal, 2020</div>
+      </div>
+    </div>
+
+    <div class="pub-item">
+      <div class="pub-year">2018</div>
+      <div class="pub-content">
+        <div class="pub-title">
+          <a href="https://pubmed.ncbi.nlm.nih.gov/29567066/" target="_blank"><em>Plasmodium</em> gametocytes in field studies: do we measure commitment to transmission or detectability?</a>
+        </div>
+        <div class="pub-authors"><strong>Koepfli C</strong>, Yan G</div>
+        <div class="pub-journal">Trends in Parasitology, 2018</div>
+      </div>
+    </div>
+
+    <div class="pub-item">
+      <div class="pub-year">2018</div>
+      <div class="pub-content">
+        <div class="pub-title">
+          <a href="https://pubmed.ncbi.nlm.nih.gov/29346381/" target="_blank">Increasingly inbred and fragmented populations of <em>Plasmodium vivax</em> associated with the eastward decline in malaria transmission across the Southwest Pacific</a>
+        </div>
+        <div class="pub-authors">Waltmann A, <strong>Koepfli C</strong>, Tessier N, … Mueller I, Barry AE</div>
+        <div class="pub-journal">PLOS Neglected Tropical Diseases, 2018</div>
+      </div>
+    </div>
+
+    <div class="pub-item">
+      <div class="pub-year">2017</div>
+      <div class="pub-content">
+        <div class="pub-title">
+          <a href="https://pubmed.ncbi.nlm.nih.gov/29133801/" target="_blank">Development of amplicon deep sequencing markers and data analysis pipeline for genotyping multi-clonal malaria infections</a>
+        </div>
+        <div class="pub-authors">Lerch A, <strong>Koepfli C</strong>, Hofmann NE, … Felger I</div>
+        <div class="pub-journal">BMC Genomics, 2017</div>
+      </div>
+    </div>
+
+    <div class="pub-item">
+      <div class="pub-year">2015</div>
+      <div class="pub-content">
+        <div class="pub-title">
+          <a href="https://pubmed.ncbi.nlm.nih.gov/26125189/" target="_blank"><em>Plasmodium vivax</em> diversity and population structure across four continents</a>
+        </div>
+        <div class="pub-authors"><strong>Koepfli C</strong>, Rodrigues PT, Antao T, … Felger I</div>
+        <div class="pub-journal">PLOS Neglected Tropical Diseases, 2015</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- PARTNERS -->
+<section id="partners">
+  <div class="section-header">
+    <span class="section-number">06</span>
+    <h2 class="section-title">Institutional Partners</h2>
+    <span class="section-tagline">Global collaborations</span>
+  </div>
+  <p class="partners-intro">
+    We work in close collaboration with research institutions, ministries of health, and universities
+    in malaria-endemic countries. These partnerships are the foundation of our science.
+  </p>
+  <div class="partner-list">
+    <div class="partner-item">
+      <div class="partner-country">Brazil</div>
+      <div class="partner-name">Laboratory of Parasitic Diseases, Fiocruz</div>
+    </div>
+    <div class="partner-item">
+      <div class="partner-country">Kenya</div>
+      <div class="partner-name">Kenya Medical Research Institute (KEMRI)</div>
+    </div>
+    <div class="partner-item">
+      <div class="partner-country">Ethiopia</div>
+      <div class="partner-name">University of Gondar, Jimma University</div>
+    </div>
+    <div class="partner-item">
+      <div class="partner-country">Tanzania</div>
+      <div class="partner-name">Zanzibar Malaria Elimination Programme (ZAMEP), Ifakara Health Institute</div>
+    </div>
+    <div class="partner-item">
+      <div class="partner-country">Ghana</div>
+      <div class="partner-name">Kwame Nkrumah University of Science & Technology</div>
+    </div>
+    <div class="partner-item">
+      <div class="partner-country">Bangladesh</div>
+      <div class="partner-name">National Malaria Control Programme, Bangladesh</div>
+    </div>
+    <div class="partner-item">
+      <div class="partner-country">Switzerland</div>
+      <div class="partner-name">Swiss Tropical and Public Health Institute</div>
+    </div>
+    <div class="partner-item">
+      <div class="partner-country">Australia</div>
+      <div class="partner-name">Walter and Eliza Hall Institute for Medical Research</div>
+    </div>
+    <div class="partner-item">
+      <div class="partner-country">USA</div>
+      <div class="partner-name">Tulane University, Case Western Reserve University, UC Irvine</div>
+    </div>
+  </div>
+</section>
+
+<!-- JOIN -->
+<section id="join">
+  <p class="join-eyebrow">Opportunities</p>
+  <h2 class="join-title">Join the Koepfli Lab</h2>
+  <p class="join-body">
+    We welcome applications from motivated PhD students, postdoctoral researchers, and visiting scholars
+    with a background in molecular biology, bioinformatics, or epidemiology. We are especially committed
+    to training researchers from malaria-endemic countries.
+  </p>
+  <a href="mailto:ckoepfli@nd.edu" class="join-btn">Get in touch →</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">
+    Koepfli Lab
+    <small>Department of Biological Sciences · Eck Institute for Global Health · University of Notre Dame</small>
+  </div>
+  <ul class="footer-links">
+    <li><a href="https://biology.nd.edu" target="_blank">Biology ND</a></li>
+    <li><a href="https://globalhealth.nd.edu" target="_blank">EIGH</a></li>
+    <li><a href="https://pubmed.ncbi.nlm.nih.gov/?term=koepfli+c%5Bauthor%5D+malaria" target="_blank">PubMed</a></li>
+    <li><a href="mailto:ckoepfli@nd.edu">Contact</a></li>
+  </ul>
+  <div class="footer-legal">© 2026 Koepfli Lab, University of Notre Dame</div>
+</footer>
+
+<script>
+  // Intersection Observer for scroll-triggered fade-ins
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.research-card, .person-card, .pub-item, .partner-item, .region-panel, .timeline-item').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+    observer.observe(el);
+  });
+
+  // Smooth active nav
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a');
+
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(sec => {
+      if (window.scrollY >= sec.offsetTop - 120) current = sec.id;
+    });
+    navLinks.forEach(a => {
+      a.style.color = a.getAttribute('href') === '#' + current ? 'var(--ink)' : '';
+    });
+  });
+</script>
+
+</body>
+</html>
